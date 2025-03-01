@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fetch-model-service
+  namespace: default  
+  labels:
+    app: fetch-model-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fetch-model-service
+  template:
+    metadata:
+      labels:
+        app: fetch-model-service
+    spec:
+      containers:
+        - name: app-container
+          image: <ECR_REGISTRY>/<ECR_REPOSITORY>:latest 
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      restartPolicy: Always

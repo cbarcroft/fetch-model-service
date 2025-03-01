@@ -41,9 +41,8 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          kubectl set image deployment/${{ vars.DEPLOYMENT_NAME }} \
-            app-container=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG \
-            -n ${{ vars.K8S_NAMESPACE || 'default' }}
+          sed -i "s|<ECR_REGISTRY>/<ECR_REPOSITORY>:latest|$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG|g" k8s/deployment.yaml
+          kubectl apply -f k8s/deployment.yaml
 
       - name: Verify deployment
         run: kubectl rollout status deployment/${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.K8S_NAMESPACE || 'default' }}
