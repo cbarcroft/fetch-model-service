@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fetch-model-service-github
+  labels:
+    app: fetch-model-service
+spec:
+  selector:
+    matchLabels:
+        app: fetch-model-service
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fetch-model-service
+    spec:
+      containers:
+        - name: fetch-model-service-app
+          image: {TBD}/fetch-model-service-app:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          imagePullPolicy: Always
