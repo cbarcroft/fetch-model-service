@@ -19,7 +19,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -30,20 +30,20 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
+        run: aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name ${{ vars.EKS_CLUSTER_NAME }}
 
       - name: Deploy to EKS
         env:
           IMAGE_TAG: ${{ github.sha }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          kubectl set image deployment/${{ secrets.DEPLOYMENT_NAME }} \
-            app-container=$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG \
-            -n ${{ secrets.K8S_NAMESPACE || 'default' }}
+          kubectl set image deployment/${{ vars.DEPLOYMENT_NAME }} \
+            app-container=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG \
+            -n ${{ vars.K8S_NAMESPACE || 'default' }}
 
       - name: Verify deployment
-        run: kubectl rollout status deployment/${{ secrets.DEPLOYMENT_NAME }} -n ${{ secrets.K8S_NAMESPACE || 'default' }}
+        run: kubectl rollout status deployment/${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.K8S_NAMESPACE || 'default' }}
