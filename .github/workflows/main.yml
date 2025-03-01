@@ -43,7 +43,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           sed -i "s|<ECR_REGISTRY>/<ECR_REPOSITORY>:latest|$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG|g" kubernetes/deployment.yaml
-          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f kubernetes/deployment.yaml
 
       - name: Verify deployment
         run: kubectl rollout status deployment/${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.K8S_NAMESPACE || 'default' }}
