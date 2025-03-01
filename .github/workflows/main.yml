@@ -42,7 +42,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          sed -i "s|<ECR_REGISTRY>/<ECR_REPOSITORY>:latest|$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG|g" k8s/deployment.yaml
+          sed -i "s|<ECR_REGISTRY>/<ECR_REPOSITORY>:latest|$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG|g" kubernetes/deployment.yaml
           kubectl apply -f k8s/deployment.yaml
 
       - name: Verify deployment
