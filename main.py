@@ -1,5 +1,6 @@
 import torch
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, pipeline
+
 
 print("Initialize tokenizer...")
 tokenizer = DistilBertTokenizer.from_pretrained(
@@ -23,3 +24,4 @@ predicted_class_id = logits.argmax().item()
 res = model.config.id2label[predicted_class_id]
 
 print(res)
+# Code only change
