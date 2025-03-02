@@ -7,8 +7,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-
   deploy:
     name: Deploy to EKS
     runs-on: ubuntu-latest
