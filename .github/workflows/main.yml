@@ -82,6 +82,6 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run:
+        run: |
           sed -i "s|<ECR_REGISTRY>/streamlit-app:latest|$ECR_REGISTRY/streamlit-app:$IMAGE_TAG|g" kubernetes/streamlit-deployment.yaml
           kubectl apply -f kubernetes/streamlit-deployment.yaml
