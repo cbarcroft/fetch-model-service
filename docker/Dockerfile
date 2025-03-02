@@ -2,12 +2,19 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements_hf.txt .
-RUN pip install -r requirements_hf.txt 
+# Install dependencies used in model download steps.
+RUN pip install --no-cache-dir transformers torch "numpy<2" \
+    --extra-index-url https://download.pytorch.org/whl/cpu
 
-COPY docker/download_model.py .
-RUN python /app/download_model.py
+# Download transformer model from Huggingface
+COPY docker/download_hf_model.py .
+RUN python /app/download_hf_model.py
 
+# Download ONNX version of same model
+COPY docker/download_onnx_model.py .
+RUN python /app/download_onnx_model.py
+
+# Install app dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt 
 

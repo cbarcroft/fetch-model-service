@@ -11,7 +11,7 @@ def backend_factory() -> requests.Session:
 
 configure_http_backend(backend_factory=backend_factory)
 
-def download_model(model_path, model_name):
+def download_hf_model(model_path, model_name):
     if not os.path.exists(model_path):
         os.makedirs(model_path)
 
@@ -22,4 +22,4 @@ def download_model(model_path, model_name):
     tokenizer.save_pretrained(model_path)
 
 
-download_model("models/distilbert/", "distilbert-base-uncased-finetuned-sst-2-english")
+download_hf_model("models/distilbert/", "distilbert-base-uncased-finetuned-sst-2-english")

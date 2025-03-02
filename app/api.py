@@ -1,25 +1,62 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi_cache.decorator import cache
-
-from transformers import pipeline
+import requests
+import onnxruntime as ort
+import numpy as np
+from transformers import AutoTokenizer, pipeline
+import os
 
 from app.models.inference_request_model import InferenceRequestModel
-
-sentiment_pipeline = pipeline(model="distilbert/distilbert-base-uncased-finetuned-sst-2-english")
-
-print(sentiment_pipeline("Model initialized successfully."))
+from app.utils.softmax import softmax
 
 app = FastAPI()
 
-@app.post("/infer")
+# Load transformer model from Huggingface
+sentiment_pipeline = pipeline("sentiment-analysis", model="models/distilbert/", tokenizer="models/distilbert/")
+
+print(sentiment_pipeline("Transformer model initialized successfully."))
+
+# Load Tokenizer (Same as original model)
+TOKENIZER = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+
+# Load ONNX model with ONNX Runtime
+print("Loading ONNX model...")
+session = ort.InferenceSession("model.onnx")
+print("ONNX model initialized successfully.")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "OK"}
+
+@app.post("/transformers/infer")
 @cache(expire=60)
 def infer(request: InferenceRequestModel):
 	sentiment_response = sentiment_pipeline(request.input)
 
 	return sentiment_response
 
-@app.get("/health")
-def health():
-	return { 
-		"status": "UP" 
-	}
+@app.post("/onnx/infer")
+@cache(expire=60)
+async def infer(request: InferenceRequestModel):
+    try:
+        inputs = TOKENIZER(request.input, return_tensors="np")
+        input_ids = inputs["input_ids"].astype(np.int64)
+        attention_mask = inputs["attention_mask"].astype(np.int64)
+
+        # Run inference
+        outputs = session.run(None, {"input_ids": input_ids, "attention_mask": attention_mask})
+
+        # Extract logits and convert to probability to match transformer model
+        logits = outputs[0][0]
+        probabilities = softmax(logits)
+
+        # Make prediction
+        labels = ["NEGATIVE", "POSITIVE", "NEUTRAL"]
+        predicted_class = np.argmax(probabilities)
+        sentiment = labels[predicted_class]
+        confidence_score = round(float(probabilities[predicted_class]), 15)  # Format score to match transformer model
+
+        return {"sentiment": sentiment, "score": confidence_score}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
