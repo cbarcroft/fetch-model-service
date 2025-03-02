@@ -79,4 +79,9 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache,mode=max
 
       - name: Deploy Streamlit to EKS
-        run: kubectl apply -f kubernetes/streamlit-deployment.yaml
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run:
+          sed -i "s|<ECR_REGISTRY>/streamlit-app:latest|$ECR_REGISTRY/streamlit-app:$IMAGE_TAG|g" kubernetes/streamlit-deployment.yaml
+          kubectl apply -f kubernetes/streamlit-deployment.yaml
