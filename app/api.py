@@ -16,3 +16,7 @@ def infer(request: InferenceRequestModel):
 	sentiment_response = sentiment_pipeline(request.input)
 
 	return sentiment_response
+
+@app.get("/health")
+def health():
+	return { status: "UP" }
