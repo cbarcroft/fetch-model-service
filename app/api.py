@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi_cache.decorator import cache
+
 from transformers import pipeline
 
 from app.models.inference_request_model import InferenceRequestModel
@@ -10,6 +12,7 @@ print(sentiment_pipeline("Model initialized successfully."))
 app = FastAPI()
 
 @app.post("/infer")
+@cache(expire=60)
 def infer(request: InferenceRequestModel):
 	sentiment_response = sentiment_pipeline(request.input)
 

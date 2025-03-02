@@ -62,3 +62,6 @@ jobs:
 
       - name: Verify deployment
         run: kubectl rollout status deployment/${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.K8S_NAMESPACE || 'default' }}
+
+      - name: Deploy Horizontal Pod Autoscaler (HPA)
+        run: kubectl apply -f kubernetes/hpa.yaml
