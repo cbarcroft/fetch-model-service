@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+
   deploy:
     name: Deploy to EKS
     runs-on: ubuntu-latest
@@ -65,3 +67,18 @@ jobs:
 
       - name: Deploy Horizontal Pod Autoscaler (HPA)
         run: kubectl apply -f kubernetes/hpa.yaml
+
+      - name: Build and push Streamlit image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./streamlit_app
+          file: ./streamlit_app/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/streamlit-app:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/streamlit-app:latest
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache,mode=max
+
+      - name: Deploy Streamlit to EKS
+        run: kubectl apply -f kubernetes/streamlit-deployment.yaml
