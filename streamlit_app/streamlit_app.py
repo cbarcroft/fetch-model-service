@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import time
 
-API_URL = "http://k8s-default-fetchmod-8ad9a1129e-d49f1c596431639a.elb.us-west-2.amazonaws.com/infer"
+API_URL = "http://k8s-default-fetchmod-7a9fee2176-0ade04e7460449c5.elb.us-west-2.amazonaws.com/infer"
 
 st.title("Sentiment Analysis with Distilbert")
 
