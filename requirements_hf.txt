@@ -1,0 +1,2 @@
+transformers[torch]
+numpy<2

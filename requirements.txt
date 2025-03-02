@@ -1,2 +1,2 @@
-transformers[torch]
-numpy<2
+fastapi
+uvicorn
