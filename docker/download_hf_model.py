@@ -3,6 +3,13 @@ import os
 import requests
 from huggingface_hub import configure_http_backend
 
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+print(config)
+
 
 def backend_factory() -> requests.Session:
     session = requests.Session()
@@ -22,4 +29,4 @@ def download_hf_model(model_path, model_name):
     tokenizer.save_pretrained(model_path)
 
 
-download_hf_model("models/distilbert/", "distilbert-base-uncased-finetuned-sst-2-english")
+download_hf_model(config["transformer"]["local_path"], config["transformer"]["model_name"])

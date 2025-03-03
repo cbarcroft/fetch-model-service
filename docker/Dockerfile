@@ -6,6 +6,8 @@ WORKDIR /app
 RUN pip install --no-cache-dir transformers torch "numpy<2" \
     --extra-index-url https://download.pytorch.org/whl/cpu
 
+COPY config.ini .
+
 # Download transformer model from Huggingface
 COPY docker/download_hf_model.py .
 RUN python /app/download_hf_model.py

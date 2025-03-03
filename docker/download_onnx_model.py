@@ -1,12 +1,17 @@
 import os
 import requests
 
-MODEL_URL = "https://huggingface.co/onnx-community/distilbert-base-uncased-finetuned-sst-2-english-ONNX/resolve/main/onnx/model.onnx"
-MODEL_PATH = "model.onnx"
+import configparser
 
-if not os.path.exists(MODEL_PATH):
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+MODE_FILENAME = config["onnx"]["filename"]
+
+
+if not os.path.exists(MODE_FILENAME):
     print("Downloading ONNX model...")
-    response = requests.get(MODEL_URL)
-    with open(MODEL_PATH, "wb") as f:
+    response = requests.get(config["onnx"]["source_url"])
+    with open(MODE_FILENAME, "wb") as f:
         f.write(response.content)
-    print(f"Downloaded ONNX model to {MODEL_PATH}")
+    print(f"Downloaded ONNX model to {MODE_FILENAME}")

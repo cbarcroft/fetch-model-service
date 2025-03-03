@@ -3,8 +3,13 @@ import requests
 import time
 import pandas as pd
 
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
+
 # API Endpoints
-BASE_URL = "http://k8s-default-fetchmod-efee52b36f-cf58d7cb3e601b77.elb.us-west-2.amazonaws.com"
+BASE_URL = config["api"]["url"]
 TRANSFORMERS_API_URL = f"{BASE_URL}/transformers/infer"
 ONNX_API_URL = f"{BASE_URL}/onnx/infer"
 

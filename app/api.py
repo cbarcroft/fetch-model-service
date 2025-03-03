@@ -5,14 +5,18 @@ import onnxruntime as ort
 import numpy as np
 from transformers import AutoTokenizer, pipeline
 import os
+import configparser
 
 from app.models.inference_request_model import InferenceRequestModel
 from app.utils.softmax import softmax
 
+config = configparser.ConfigParser()
+config.read("config.ini")
+
 app = FastAPI()
 
 # Load transformer model from Huggingface
-sentiment_pipeline = pipeline("sentiment-analysis", model="models/distilbert/", tokenizer="models/distilbert/")
+sentiment_pipeline = pipeline("sentiment-analysis", model=config['transformer']['local_path'], tokenizer=config['transformer']['local_path'])
 
 print(sentiment_pipeline("Transformer model initialized successfully."))
 
@@ -21,7 +25,7 @@ TOKENIZER = AutoTokenizer.from_pretrained("distilbert-base-uncased")
 
 # Load ONNX model with ONNX Runtime
 print("Loading ONNX model...")
-session = ort.InferenceSession("model.onnx")
+session = ort.InferenceSession(config['onnx']['filename'])
 print("ONNX model initialized successfully.")
 
 @app.get("/health")
