@@ -5,11 +5,15 @@ metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
     service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-0d07cf16c21d05621,eipalloc-07577f9754e395d9d,eipalloc-01c9a471c249b045f,eipalloc-0af319a453747f653"
+  labels:
+    app: fetch-model-service
 spec:
   selector:
     app: fetch-model-service
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080 
-  type: LoadBalancer  
+      targetPort: 8080
+  type: LoadBalancer
+  externalTrafficPolicy: Local
