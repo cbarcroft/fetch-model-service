@@ -18,6 +18,7 @@ app = FastAPI()
 # Load transformer model from Huggingface
 sentiment_pipeline = pipeline("sentiment-analysis", model=config['transformer']['local_path'], tokenizer=config['transformer']['local_path'])
 
+# Print sentiment of the success message.  Should be positive :)
 print(sentiment_pipeline("Transformer model initialized successfully."))
 
 # Load Tokenizer (Same as original model)
@@ -28,10 +29,12 @@ print("Loading ONNX model...")
 session = ort.InferenceSession(config['onnx']['filename'])
 print("ONNX model initialized successfully.")
 
+# Healthcheck endpoint for kubernetes; simply responds 200 with status OK
 @app.get("/health")
 async def health_check():
     return {"status": "OK"}
 
+# Inferance endpoint for HF model in pipeline.
 @app.post("/transformers/infer")
 @cache(expire=60)
 def infer(request: InferenceRequestModel):
@@ -39,6 +42,8 @@ def infer(request: InferenceRequestModel):
 
 	return sentiment_response
 
+# Inference endpoint for ONNX version of same model.  Performs better, but requires 
+# a little more groundwork in both creating the input and parsing the result.
 @app.post("/onnx/infer")
 @cache(expire=60)
 async def infer(request: InferenceRequestModel):
