@@ -59,7 +59,7 @@ Open your browser and visit localhost:8501.
 Note!  This app has a single configuration, which points at the API deployed in EKS.  Edit API->URL in config.ini if you wish to test against an API instance running elsewhere (for example, locally).  
 
 ## Kubernetes Ecosystem
-![Pods](docs/images/kubectl_get_po.png)
+![Pods](https://github.com/cbarcroft/fetch-model-service/blob/main/docs/images/kubectl_get_po.PNG)
 
 API:  Min(1) - Max(10) API pods
 Streamlit:  1 pod
@@ -68,7 +68,7 @@ Horizontal Pod Autoscaler set to 70% CPU threshold
 Network Load Balancers for each service
 
 ## Deployment Workflow
-![Github Actions](docs/images/pipeline_overview.png)
+![Github Actions](https://github.com/cbarcroft/fetch-model-service/blob/main/docs/images/pipeline_overview.PNG)
 
 - **GitHub Actions Workflow**:
   - Builds and pushes Docker images for both the API and Streamlit application.
