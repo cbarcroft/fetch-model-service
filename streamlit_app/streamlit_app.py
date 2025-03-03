@@ -6,7 +6,7 @@ import pandas as pd
 import configparser
 
 config = configparser.ConfigParser()
-config.read("../config.ini")
+config.read("config.ini")
 
 # API Endpoints
 BASE_URL = config["api"]["url"]
