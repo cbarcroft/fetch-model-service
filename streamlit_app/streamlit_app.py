@@ -14,6 +14,7 @@ st.title("Sentiment Analysis Performance: Transformer vs. ONNX")
 
 st.sidebar.title("App Info")
 st.sidebar.write("Compare sentiment analysis performance between Huggingface Transformer and ONNX models.")
+st.sidebar.write("Source Model:  https://huggingface.co/distilbert/distilbert-base-uncased-finetuned-sst-2-english")
 
 # Call into one of the model APIs
 def fetch_sentiment(api_url, text):

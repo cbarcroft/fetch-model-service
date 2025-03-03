@@ -7,15 +7,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy to EKS
+  build:
+    name: Build & Push Docker Images
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -36,7 +36,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image (GHCR caching)
+      - name: Build and Push API Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -48,25 +48,7 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache,mode=max
 
-
-      - name: Update kubeconfig
-        run: aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name ${{ vars.EKS_CLUSTER_NAME }}
-
-      - name: Deploy to EKS
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          sed -i "s|<ECR_REGISTRY>/<ECR_REPOSITORY>:latest|$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG|g" kubernetes/deployment.yaml
-          kubectl apply -f kubernetes/deployment.yaml
-
-      - name: Verify deployment
-        run: kubectl rollout status deployment/${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.K8S_NAMESPACE || 'default' }}
-
-      - name: Deploy Horizontal Pod Autoscaler (HPA)
-        run: kubectl apply -f kubernetes/hpa.yaml
-
-      - name: Build and push Streamlit image
+      - name: Build and Push Streamlit Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./streamlit_app
@@ -77,6 +59,58 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/streamlit-app:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:build-cache,mode=max
+
+  deploy_api:
+    name: Deploy API to EKS
+    runs-on: ubuntu-latest
+    needs: build 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name ${{ vars.EKS_CLUSTER_NAME }}
+
+      - name: Deploy API to EKS
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          sed -i "s|<ECR_REGISTRY>/<ECR_REPOSITORY>:latest|$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG|g" kubernetes/deployment.yaml
+          kubectl apply -f kubernetes/deployment.yaml
+
+      - name: Verify API Deployment
+        run: kubectl rollout status deployment/${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.K8S_NAMESPACE || 'default' }}
+
+      - name: Deploy Horizontal Pod Autoscaler (HPA)
+        run: kubectl apply -f kubernetes/hpa.yaml
+
+  deploy_streamlit:
+    name: Deploy Streamlit to EKS
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name ${{ vars.EKS_CLUSTER_NAME }}
 
       - name: Deploy Streamlit to EKS
         env:
